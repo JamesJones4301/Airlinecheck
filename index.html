@@ -1,0 +1,467 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AUS ⇄ JRO Flight Deal Tracker</title>
+  <style>
+    :root{--bg:#0b132b;--card:#1c2541;--ink:#e0e6f6;--muted:#9fb3d1;--accent:#5bc0be;--warn:#ffd166}
+    *{box-sizing:border-box} body{margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;color:var(--ink);background:linear-gradient(180deg,#091023 0%,#0b132b 80%)}
+    header{padding:28px 20px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:14px;justify-content:space-between}
+    h1{margin:0;font-size:clamp(20px,3vw,28px)} .sub{color:var(--muted);font-size:14px}
+    main{padding:12px 20px 40px;max-width:1100px;margin:auto;display:grid;grid-template-columns:1.3fr .7fr;gap:16px}
+    .card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    .pad{padding:16px}
+    .grid{display:grid;gap:10px}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    input,select,button{border-radius:12px;border:1px solid rgba(255,255,255,.12);padding:10px 12px;background:#0e1838;color:var(--ink)}
+    button{cursor:pointer;background:linear-gradient(180deg,#1f4068,#1b2a49);border:1px solid rgba(255,255,255,.18)}
+    button.primary{background:linear-gradient(180deg,#1aa3a1,#12807f);border-color:#2ac6c3}
+    button.warn{background:linear-gradient(180deg,#f6c453,#f4a261);border-color:#ffb703;color:#2b2d42}
+    a.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;text-decoration:none;background:#13203f;border:1px solid rgba(255,255,255,.15);color:var(--ink)}
+    small, .muted{color:var(--muted)}
+    table{width:100%;border-collapse:collapse}
+    th,td{border-bottom:1px solid rgba(255,255,255,.08);padding:10px;text-align:left}
+    .good{color:#7dffcd} .bad{color:#ff9b9b}
+    .pill{padding:4px 8px;border-radius:999px;background:#13203f;border:1px solid rgba(255,255,255,.12)}
+    details{background:#0f1a39;border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px}
+    summary{cursor:pointer}
+    footer{padding:20px;color:var(--muted);text-align:center}
+    code,pre{background:#0f1a39;border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;display:block;overflow:auto}
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Flight Deal Tracker — Austin (AUS) ⇄ Kilimanjaro (JRO)</h1>
+      <div class="sub">Single-file dashboard you can drop into any GitHub repo & host on GitHub Pages.</div>
+    </div>
+    <div class="row">
+      <span class="pill" id="today"></span>
+      <span class="pill">Currency: USD</span>
+    </div>
+  </header>
+
+  <main>
+    <!-- LEFT: Search & tracking -->
+    <section class="card pad grid">
+      <div class="row">
+        <div>
+          <div class="muted">Dates window</div>
+          <div><strong id="datesLabel">2025‑11‑20 → 2025‑11‑30</strong></div>
+        </div>
+        <div style="margin-left:auto" class="row">
+          <label class="muted" for="cabin">Cabin</label>
+          <select id="cabin">
+            <option value="economy" selected>Economy</option>
+            <option value="business">Business</option>
+          </select>
+          <button id="openAll" class="primary">Open all searches</button>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="row" style="gap:8px;flex-wrap:wrap">
+          <a class="btn" id="gfe" target="_blank">Google Flights (Economy)</a>
+          <a class="btn" id="gfb" target="_blank">Google Flights (Business)</a>
+          <a class="btn" id="sky" target="_blank">Skyscanner</a>
+          <a class="btn" id="hopper" target="_blank">Hopper (app)</a>
+          <a class="btn" id="klm" target="_blank">KLM</a>
+          <a class="btn" id="qr" target="_blank">Qatar Airways</a>
+          <a class="btn" id="tk" target="_blank">Turkish Airlines</a>
+          <a class="btn" id="et" target="_blank">Ethiopian</a>
+        </div>
+        <small class="muted">Tip: also try nearby airports — depart: SAT / IAH / DFW • arrive: DAR / NBO / ZNZ / ARK. Use the buttons above, then tweak the airports in the search UI.</small>
+      </div>
+
+      <div class="grid" style="margin-top:8px">
+        <details open>
+          <summary><strong>Pre‑wired alternates (avoid NBO)</strong></summary>
+          <div class="row" style="gap:8px;flex-wrap:wrap;margin:8px 0">
+            <a class="btn" id="iahJroE" target="_blank">IAH ⇄ JRO (Economy)</a>
+            <a class="btn" id="iahJroB" target="_blank">IAH ⇄ JRO (Business)</a>
+            <a class="btn" id="dfwJroE" target="_blank">DFW ⇄ JRO (Economy)</a>
+            <a class="btn" id="dfwJroB" target="_blank">DFW ⇄ JRO (Business)</a>
+            <a class="btn" id="ausDarE" target="_blank">AUS ⇄ DAR (Economy)</a>
+            <a class="btn" id="ausDarB" target="_blank">AUS ⇄ DAR (Business)</a>
+            <a class="btn" id="darJroOut" target="_blank">DAR → JRO (one‑way)</a>
+            <a class="btn" id="jroDarBack" target="_blank">JRO → DAR (one‑way)</a>
+            <button class="primary" id="openAlts">Open all alternates</button>
+          </div>
+          <small class="muted">These presets bias routes via <strong>IST/DOH/ADD/AMS</strong> or <strong>DAR</strong> to avoid <strong>NBO</strong> both ways. If a meta‑search shows Nairobi, use its filters to exclude it.</small>
+        </details>
+      </div>
+
+      <hr style="border:0;border-top:1px solid rgba(255,255,255,.12)">
+
+      <div class="grid">
+        <div class="row">
+          <div>
+            <div class="muted">Price threshold alert</div>
+            <div><strong>Notify me if under <span id="threshText">$2000</span></strong></div>
+          </div>
+          <div style="margin-left:auto" class="row">
+            <input id="threshold" type="number" min="0" step="50" value="2000" />
+            <button class="warn" id="enableNotify">Enable 3‑day reminder</button>
+          </div>
+        </div>
+        <small class="muted">This is a lightweight helper: it reminds you every 3 days to re‑check prices. For automatic background price checks, see the <a href="#automation">Automation</a> section.</small>
+      </div>
+
+      <div class="grid">
+        <div class="row">
+          <h3 style="margin:0">My price log</h3>
+          <div style="margin-left:auto" class="row">
+            <button id="addPrice">+ Log price</button>
+            <button id="clearLog">Clear</button>
+          </div>
+        </div>
+        <table id="priceTable">
+          <thead><tr><th>Date</th><th>Cabin</th><th>Total (USD)</th><th>Note / Source</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RIGHT: Hints & how‑to -->
+    <aside class="card pad grid">
+      <h3 style="margin:0 0 6px">Quick How‑To</h3>
+      <ol style="margin:0 0 6px 18px">
+        <li>Click <em>Open all searches</em> and compare prices for AUS⇄JRO (Nov 20–30).</li>
+        <li>Try <strong>multi‑leg</strong> & nearby airports (AUS/IAH/DFW → AMS/IST/DOH/ADD/NBO/DAR → JRO).</li>
+        <li>Log what you find and set your threshold (e.g., $2000 total).</li>
+        <li>Turn on the <em>3‑day reminder</em> so you don’t miss dips.</li>
+      </ol>
+
+      <details open>
+        <summary><strong>Money‑saving combos</strong></summary>
+        <ul>
+          <li>Book AUS→NBO (or DAR) on a long‑haul carrier, then a separate NBO/DAR→JRO hop (Kenya Airways or Precision Air). Check visas & minimum connection times.</li>
+          <li>Position to IAH or DFW for more options (Ethiopian, Qatar) — often cheaper than starting at AUS.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary id="automation"><strong>Optional: automation with GitHub Actions (daily checks)</strong></summary>
+        <p>To automate price checks, you’ll add <em>two tiny files</em> to this same repo: a workflow (<code>.github/workflows/fare-check.yml</code>) and a script (<code>scripts/check.js</code>) that calls the <a href="https://developers.amadeus.com/" target="_blank">Amadeus Flight Offers Search API</a>. The workflow writes <code>latest.json</code> with the lowest fare it finds. This HTML will load and display it when present.</p>
+        <p><strong>1) Create</strong> <code>.github/workflows/fare-check.yml</code>:</p>
+<pre>
+name: Fare Check
+on:
+  schedule: [{cron: '0 12 * * *'}] # daily 12:00 UTC
+  workflow_dispatch:
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '20'}
+      - run: npm i amadeus@8
+      - run: node scripts/check.js
+        env:
+          AMADEUS_CLIENT_ID: ${{ secrets.AMADEUS_CLIENT_ID }}
+          AMADEUS_CLIENT_SECRET: ${{ secrets.AMADEUS_CLIENT_SECRET }}
+      - name: Commit JSON
+        run: |
+          git config user.name "pricebot"
+          git config user.email "pricebot@users.noreply.github.com"
+          git add latest.json
+          git commit -m "update latest" || echo "no changes"
+          git push
+</pre>
+        <p><strong>2) Create</strong> <code>scripts/check.js</code>:</p>
+<pre>
+// Minimal daily check: AUS → JRO (2025-11-20 to 2025-11-30)
+import Amadeus from 'amadeus';
+import { writeFileSync } from 'node:fs';
+const a = new Amadeus({
+  clientId: process.env.AMADEUS_CLIENT_ID,
+  clientSecret: process.env.AMADEUS_CLIENT_SECRET,
+});
+const params = {
+  originLocationCode: 'AUS',
+  destinationLocationCode: 'JRO',
+  departureDate: '2025-11-20',
+  returnDate: '2025-11-30',
+  adults: 1,
+  currencyCode: 'USD',
+  max: 20,
+};
+const res = await a.shopping.flightOffersSearch.get(params);
+const offers = res.data || [];
+const cheapest = offers.sort((a,b)=>+a.price.total-+b.price.total)[0] || null;
+const out = { when: new Date().toISOString(), params, cheapest };
+writeFileSync('latest.json', JSON.stringify(out, null, 2));
+console.log('Wrote latest.json', cheapest?.price?.total);
+</pre>
+        <p><strong>3) Add repo secrets</strong> <em>Settings → Secrets → Actions</em>: <code>AMADEUS_CLIENT_ID</code> and <code>AMADEUS_CLIENT_SECRET</code> (free tier available). Enable GitHub Pages to host this file.</p>
+        <p>Next run, this page will show "Latest automated price" below and compare to your threshold.</p>
+      </details>
+
+      <details>
+        <summary><strong>Deep‑links you can edit</strong></summary>
+        <p>Edit dates/airports below if your plans change.</p>
+        <pre id="linksDump"></pre>
+      </details>
+
+    </aside>
+  </main>
+
+  <!-- Visualization & sample prices -->
+  <section class="card pad" id="viz" style="max-width:1100px;margin:0 auto 16px">
+    <h3 style="margin:0 0 10px">Visualization & sample prices (demo)</h3>
+    <div class="row" style="margin-bottom:8px;gap:8px">
+      <button id="seedDemo">Seed demo data</button>
+      <span class="muted">Adds example entries to your log so you can see the chart. You can delete them with <em>Clear</em> in the log.</span>
+    </div>
+
+    <div class="grid" style="margin-bottom:12px">
+      <h4 style="margin:0">Sample prices to review (illustrative – verify before booking)</h4>
+      <table id="sampleTable">
+        <thead><tr><th>Route</th><th>Cabin</th><th>Approx total</th><th>Notes</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="grid">
+      <h4 style="margin:0 0 6px">My price trend</h4>
+      <svg id="priceChart" viewBox="0 0 800 280" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;background:#0f1a39;border:1px solid rgba(255,255,255,.12);border-radius:12px"></svg>
+      <small class="muted">Chart draws from your <em>My price log</em>. Economy line uses accent; Business uses warm tone.</small>
+    </div>
+  </section>
+
+  <section class="card pad" style="max-width:1100px;margin:0 auto 28px">
+    <div class="row" style="align-items:flex-start">
+      <div style="flex:1">
+        <h3 style="margin:0 0 6px">Latest automated price (if JSON present)</h3>
+        <div id="autoPrice" class="muted">Looking for <code>latest.json</code> in this repo…</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Built for personal use — prices are indicative only. Always confirm details on the airline’s site before booking.
+  </footer>
+
+  <script>
+  const cfg = {
+    origin: 'AUS', dest: 'JRO', depart: '2025-11-20', ret: '2025-11-30', currency: 'USD'
+  };
+  const els = (id)=>document.getElementById(id);
+  const fmtUSD = (n)=> new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
+  // Today
+  els('today').textContent = new Date().toLocaleString();
+  els('datesLabel').textContent = cfg.depart+ ' → ' + cfg.ret;
+  // Price threshold
+  const savedThresh = +localStorage.getItem('thresh') || 2000;
+  els('threshold').value = savedThresh; els('threshText').textContent = '$'+savedThresh;
+  els('threshold').addEventListener('input', e=>{
+    localStorage.setItem('thresh', e.target.value);
+    els('threshText').textContent = '$'+e.target.value;
+  });
+  // Build deep links (they may change over time; tweak as needed)
+  function gf(cabin){
+    const t = cabin==='business' ? 'b' : 'f';
+    return `https://www.google.com/travel/flights?hl=en-US#flt=${cfg.origin}.${cfg.dest}.${cfg.depart}*${cfg.dest}.${cfg.origin}.${cfg.ret};c:${cfg.currency};e:1;sd:1;t:${t}`;
+  }
+  // Generic Google Flights deeplink for arbitrary origin/destination
+  function gfOD(o,d,cabin){
+    const t = cabin==='business' ? 'b' : 'f';
+    return `https://www.google.com/travel/flights?hl=en-US#flt=${o}.${d}.${cfg.depart}*${d}.${o}.${cfg.ret};c:${cfg.currency};e:1;sd:1;t:${t}`;
+  }
+  // One‑way helper
+  function gfOneWay(o,d,date,cabin='economy'){
+    const t = cabin==='business' ? 'b' : 'f';
+    return `https://www.google.com/travel/flights?hl=en-US#flt=${o}.${d}.${date};c:${cfg.currency};e:1;sd:1;t:${t}`;
+  }
+  const sky = `https://www.skyscanner.com/transport/flights/${cfg.origin.toLowerCase()}/${cfg.dest.toLowerCase()}/${cfg.depart.replaceAll('-','')}/${cfg.ret.replaceAll('-','')}/?adults=1&cabinclass=economy&rtn=1`;
+  const links = {
+    // Primary
+    gfe: gf('economy'), gfb: gf('business'), sky,
+    hopper: 'https://www.hopper.com/flights',
+    klm: 'https://www.klm.com/flight-search/',
+    qr: 'https://www.qatarairways.com/en/search-flights.html',
+    tk: 'https://www.turkishairlines.com/en-int/flights/',
+    et: 'https://www.ethiopianairlines.com/book/booking/flight-search',
+    // Alternates (avoid NBO)
+    iahJroE: gfOD('IAH','JRO','economy'),
+    iahJroB: gfOD('IAH','JRO','business'),
+    dfwJroE: gfOD('DFW','JRO','economy'),
+    dfwJroB: gfOD('DFW','JRO','business'),
+    ausDarE: gfOD('AUS','DAR','economy'),
+    ausDarB: gfOD('AUS','DAR','business'),
+    darJroOut: gfOneWay('DAR','JRO', cfg.depart),
+    jroDarBack: gfOneWay('JRO','DAR', cfg.ret)
+  };
+  Object.entries(links).forEach(([id,url])=>{ const a=els(id); if(a){ a.href=url; }});
+  els('linksDump').textContent = JSON.stringify({config: cfg, links}, null, 2);
+
+  // Open all helper
+  els('openAll').addEventListener('click', ()=>{
+    ['gfe','sky','klm','qr','tk','et'].forEach(id=> window.open(links[id], '_blank'));
+  });
+  const openAltIds = ['iahJroE','iahJroB','dfwJroE','dfwJroB','ausDarE','ausDarB','darJroOut','jroDarBack'];
+  const openAltsBtn = els('openAlts');
+  if(openAltsBtn){ openAltsBtn.addEventListener('click', ()=>{ openAltIds.forEach(id=> window.open(links[id], '_blank')); }); }
+  });
+
+  // Notifications every 3 days (while the browser is running)
+  let notifTimer = null;
+  els('enableNotify').addEventListener('click', async ()=>{
+    if(!('Notification' in window)) return alert('Notifications not supported in this browser.');
+    let perm = Notification.permission;
+    if(perm !== 'granted') perm = await Notification.requestPermission();
+    if(perm !== 'granted') return;
+    if(notifTimer) clearInterval(notifTimer);
+    const threeDays = 3*24*60*60*1000;
+    new Notification('AUS ⇄ JRO — reminder', {body:'Time to re-check fares against your threshold.'});
+    notifTimer = setInterval(()=>{
+      new Notification('AUS ⇄ JRO — reminder', {body:'Re-check Google Flights/Skyscanner & update your log.'});
+    }, threeDays);
+    alert('3‑day reminders enabled for this tab. Keep notifications allowed.');
+  });
+
+  // Simple price log in localStorage
+  const key = 'priceLog';
+  const log = JSON.parse(localStorage.getItem(key) || '[]');
+  function render(){
+    const tb = document.querySelector('#priceTable tbody');
+    tb.innerHTML = '';
+    log.sort((a,b)=> new Date(b.when)-new Date(a.when));
+    log.forEach(row=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${new Date(row.when).toLocaleString()}</td><td>${row.cabin}</td><td>${fmtUSD(row.price)}</td><td>${row.note||''}</td>`;
+      tb.appendChild(tr);
+    })
+  }
+  render();
+
+  // --- Visualization (SVG chart) ---
+  const svg = document.getElementById('priceChart');
+  function drawChart(){
+    if(!svg) return;
+    const W=800,H=280, P=36; // padding
+    const data = log.slice().sort((a,b)=> new Date(a.when)-new Date(b.when));
+    svg.innerHTML='';
+    if(data.length===0){
+      svg.innerHTML = `<text x="${W/2-120}" y="${H/2}" fill="#9fb3d1">No data yet — log a price or click Seed demo data.</text>`;
+      return;
+    }
+    const xs = data.map(d=> new Date(d.when).getTime());
+    const ys = data.map(d=> +d.price);
+    const minX = Math.min(...xs), maxX = Math.max(...xs);
+    const minY = Math.min(...ys), maxY = Math.max(...ys);
+    const x = t=> P + ( (t-minX)/(maxX-minX||1) )*(W-2*P);
+    const y = v=> H-P - ( (v-minY)/(maxY-minY||1) )*(H-2*P);
+
+    // axes
+    const axes = document.createElementNS('http://www.w3.org/2000/svg','g');
+    axes.innerHTML = `<line x1="${P}" y1="${H-P}" x2="${W-P}" y2="${H-P}" stroke="rgba(255,255,255,.4)" />
+                      <line x1="${P}" y1="${P}" x2="${P}" y2="${H-P}" stroke="rgba(255,255,255,.4)" />`;
+    svg.appendChild(axes);
+
+    function pathFor(cabin){
+      const rows = data.filter(d=> d.cabin===cabin);
+      if(rows.length===0) return null;
+      const d = rows.map((r,i)=> `${i?'L':'M'} ${x(new Date(r.when).getTime())} ${y(+r.price)}`).join(' ');
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      const color = cabin==='business' ? '#ffd166' : '#5bc0be';
+      g.innerHTML = `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.5" />`;
+      rows.forEach(r=>{
+        g.innerHTML += `<circle cx="${x(new Date(r.when).getTime())}" cy="${y(+r.price)}" r="3" fill="${color}" />`;
+      });
+      return g;
+    }
+    const econ = pathFor('economy');
+    const biz = pathFor('business');
+    if(econ) svg.appendChild(econ);
+    if(biz) svg.appendChild(biz);
+
+    // labels
+    const lbl = document.createElementNS('http://www.w3.org/2000/svg','g');
+    lbl.innerHTML = `<text x="${W-P-160}" y="${P+12}" fill="#5bc0be">● Economy</text>
+                     <text x="${W-P-160}" y="${P+28}" fill="#ffd166">● Business</text>`;
+    svg.appendChild(lbl);
+  }
+  drawChart();
+  els('addPrice').addEventListener('click', ()=>{
+    const p = +prompt('Total price in USD (numbers only):', '2000');
+    if(!p || p<=0) return;
+    const cabin = els('cabin').value;
+    const note = prompt('Where did you see this price? (e.g., Google Flights, KLM, etc.)','');
+    log.push({when:new Date().toISOString(), price:p, cabin, note});
+    localStorage.setItem(key, JSON.stringify(log));
+    render();
+    drawChart();
+    const thresh = +els('threshold').value;
+    if(p<=thresh) alert('✅ This meets your threshold — consider booking!');
+  });
+    if(!p || p<=0) return;
+    const cabin = els('cabin').value;
+    const note = prompt('Where did you see this price? (e.g., Google Flights, KLM, etc.)','');
+    log.push({when:new Date().toISOString(), price:p, cabin, note});
+    localStorage.setItem(key, JSON.stringify(log));
+    render();
+    const thresh = +els('threshold').value;
+    if(p<=thresh) alert('✅ This meets your threshold — consider booking!');
+  });
+  els('clearLog').addEventListener('click', ()=>{
+    if(confirm('Clear your saved log?')){ localStorage.removeItem(key); location.reload(); }
+  });
+
+  // Seed demo data + sample price table
+  const seed = [
+    {days:-14, price:1920, cabin:'economy', note:'TK via IST (sample)'},
+    {days:-10, price:1875, cabin:'economy', note:'ET via ADD (sample)'},
+    {days:-7,  price:2050, cabin:'economy', note:'QR via DOH (sample)'},
+    {days:-3,  price:3980, cabin:'business', note:'TK via IST (sample)'},
+    {days:-2,  price:4120, cabin:'business', note:'QR via DOH (sample)'},
+    {days:-1,  price:3840, cabin:'business', note:'ET via ADD (sample)'}
+  ];
+  function seedDemo(){
+    const now = new Date();
+    seed.forEach(s=>{
+      const when = new Date(now.getTime()+s.days*24*3600*1000).toISOString();
+      log.push({when, price:s.price, cabin:s.cabin, note:s.note});
+    });
+    localStorage.setItem(key, JSON.stringify(log));
+    render();
+    drawChart();
+    alert('Demo entries added to your log.');
+  }
+  const seedBtn = els('seedDemo');
+  if(seedBtn) seedBtn.addEventListener('click', seedDemo);
+
+  const samples = [
+    {route:'AUS ⇄ JRO (via IST)', cabin:'Economy', approx:'$1,800–$2,100', notes:'Use Turkish; filter out NBO'},
+    {route:'AUS ⇄ JRO (via DOH)', cabin:'Economy', approx:'$1,900–$2,300', notes:'Use Qatar; avoid NBO'},
+    {route:'AUS ⇄ JRO (via ADD)', cabin:'Economy', approx:'$1,700–$2,050', notes:'Use Ethiopian; avoid NBO'},
+    {route:'AUS ⇄ DAR + DAR ⇄ JRO', cabin:'Economy combo', approx:'$1,550–$1,950 + $120–$180 hop', notes:'Book separately; long layover'},
+    {route:'AUS ⇄ JRO (via IST/DOH/ADD)', cabin:'Business', approx:'$3,700–$5,000', notes:'Top cabin is Business on most carriers'}
+  ];
+  const st = document.querySelector('#sampleTable tbody');
+  if(st){
+    st.innerHTML = samples.map(s=> `<tr><td>${s.route}</td><td>${s.cabin}</td><td>${s.approx}</td><td>${s.notes}</td></tr>`).join('');
+  } location.reload(); }
+  });
+
+  // Try to load latest.json (from GitHub Actions)
+  fetch('./latest.json', {cache:'no-store'})
+    .then(r=> r.ok ? r.json() : null)
+    .then(j=>{
+      if(!j) return;
+      const cheapest = j.cheapest?.price?.total ? Number(j.cheapest.price.total) : null;
+      const c = cheapest ? fmtUSD(cheapest) : 'n/a';
+      const rt = j.cheapest?.itineraries?.[1]?.segments?.length || 0;
+      const legs = j.cheapest?.itineraries?.[0]?.segments?.length || 0;
+      const txt = `As of ${new Date(j.when).toLocaleString()} → ${c} (segments: outbound ${legs}, return ${rt}).`;
+      document.getElementById('autoPrice').textContent = txt;
+      const thresh = +els('threshold').value;
+      if(cheapest && cheapest <= thresh) {
+        document.getElementById('autoPrice').innerHTML += ` <span class="good">(under threshold ✔)</span>`;
+      }
+    }).catch(()=>{});
+  </script>
+</body>
+</html>
