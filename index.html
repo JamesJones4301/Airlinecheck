@@ -250,9 +250,11 @@ console.log('Wrote latest.json', cheapest?.price?.total);
   };
   const els = (id)=>document.getElementById(id);
   const fmtUSD = (n)=> new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(n);
-  // Today
+
+  // Today & dates
   els('today').textContent = new Date().toLocaleString();
   els('datesLabel').textContent = cfg.depart+ ' → ' + cfg.ret;
+
   // Price threshold
   const savedThresh = +localStorage.getItem('thresh') || 2000;
   els('threshold').value = savedThresh; els('threshText').textContent = '$'+savedThresh;
@@ -260,17 +262,16 @@ console.log('Wrote latest.json', cheapest?.price?.total);
     localStorage.setItem('thresh', e.target.value);
     els('threshText').textContent = '$'+e.target.value;
   });
+
   // Build deep links (they may change over time; tweak as needed)
   function gf(cabin){
     const t = cabin==='business' ? 'b' : 'f';
     return `https://www.google.com/travel/flights?hl=en-US#flt=${cfg.origin}.${cfg.dest}.${cfg.depart}*${cfg.dest}.${cfg.origin}.${cfg.ret};c:${cfg.currency};e:1;sd:1;t:${t}`;
   }
-  // Generic Google Flights deeplink for arbitrary origin/destination
   function gfOD(o,d,cabin){
     const t = cabin==='business' ? 'b' : 'f';
     return `https://www.google.com/travel/flights?hl=en-US#flt=${o}.${d}.${cfg.depart}*${d}.${o}.${cfg.ret};c:${cfg.currency};e:1;sd:1;t:${t}`;
   }
-  // One‑way helper
   function gfOneWay(o,d,date,cabin='economy'){
     const t = cabin==='business' ? 'b' : 'f';
     return `https://www.google.com/travel/flights?hl=en-US#flt=${o}.${d}.${date};c:${cfg.currency};e:1;sd:1;t:${t}`;
@@ -297,14 +298,13 @@ console.log('Wrote latest.json', cheapest?.price?.total);
   Object.entries(links).forEach(([id,url])=>{ const a=els(id); if(a){ a.href=url; }});
   els('linksDump').textContent = JSON.stringify({config: cfg, links}, null, 2);
 
-  // Open all helper
+  // Openers
   els('openAll').addEventListener('click', ()=>{
     ['gfe','sky','klm','qr','tk','et'].forEach(id=> window.open(links[id], '_blank'));
   });
   const openAltIds = ['iahJroE','iahJroB','dfwJroE','dfwJroB','ausDarE','ausDarB','darJroOut','jroDarBack'];
   const openAltsBtn = els('openAlts');
   if(openAltsBtn){ openAltsBtn.addEventListener('click', ()=>{ openAltIds.forEach(id=> window.open(links[id], '_blank')); }); }
-  });
 
   // Notifications every 3 days (while the browser is running)
   let notifTimer = null;
@@ -385,6 +385,8 @@ console.log('Wrote latest.json', cheapest?.price?.total);
     svg.appendChild(lbl);
   }
   drawChart();
+
+  // Handlers
   els('addPrice').addEventListener('click', ()=>{
     const p = +prompt('Total price in USD (numbers only):', '2000');
     if(!p || p<=0) return;
@@ -394,15 +396,6 @@ console.log('Wrote latest.json', cheapest?.price?.total);
     localStorage.setItem(key, JSON.stringify(log));
     render();
     drawChart();
-    const thresh = +els('threshold').value;
-    if(p<=thresh) alert('✅ This meets your threshold — consider booking!');
-  });
-    if(!p || p<=0) return;
-    const cabin = els('cabin').value;
-    const note = prompt('Where did you see this price? (e.g., Google Flights, KLM, etc.)','');
-    log.push({when:new Date().toISOString(), price:p, cabin, note});
-    localStorage.setItem(key, JSON.stringify(log));
-    render();
     const thresh = +els('threshold').value;
     if(p<=thresh) alert('✅ This meets your threshold — consider booking!');
   });
@@ -443,8 +436,7 @@ console.log('Wrote latest.json', cheapest?.price?.total);
   const st = document.querySelector('#sampleTable tbody');
   if(st){
     st.innerHTML = samples.map(s=> `<tr><td>${s.route}</td><td>${s.cabin}</td><td>${s.approx}</td><td>${s.notes}</td></tr>`).join('');
-  } location.reload(); }
-  });
+  }
 
   // Try to load latest.json (from GitHub Actions)
   fetch('./latest.json', {cache:'no-store'})
